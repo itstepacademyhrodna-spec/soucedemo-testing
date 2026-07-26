@@ -31,7 +31,7 @@ def test_login_invalid_password(page):
     page.goto("https://saucedemo.com")
 
     page.fill("#user-name", "standard_user")
-    page.fill("#password", "wrong_password")
+    page.fill("#password", "12345678")
     page.click("#login-button")
     
     time.sleep(1)
