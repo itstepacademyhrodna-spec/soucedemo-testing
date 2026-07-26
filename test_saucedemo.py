@@ -5,16 +5,16 @@ import pytest
 @pytest.fixture()
 def page():
    with sync_playwright() as driver:
-        browser = driver.chromium.launch(headless=False)
+        browser = driver.chromium.launch(headless=True)
         page = browser.new_page()
 
         yield page  
         browser.close()
         
 
-        
+@pytest.mark.critical       
 def test_login_success(page):
-
+    
     page.goto("https://saucedemo.com")
 
     page.fill("#user-name", "standard_user")
@@ -26,15 +26,15 @@ def test_login_success(page):
     product_items = page.locator(".inventory_item")
     assert product_items.count() > 0
 
+@pytest.mark.critical
 def test_login_invalid_password(page):
 
     page.goto("https://saucedemo.com")
 
     page.fill("#user-name", "standard_user")
-    page.fill("#password", "12345678")
+    page.fill("#password", "wrong_password")
     page.click("#login-button")
     
-    time.sleep(1)
 
     url = page.url
     assert "inventory.html" not in url
@@ -42,6 +42,7 @@ def test_login_invalid_password(page):
     assert error_box.is_visible() == True
     assert "Username and password do not match" in error_box.inner_text()
 
+@pytest.mark.smoke 
 def test_login_by_enter(page):
 
     page.goto ("https://saucedemo.com")
@@ -50,11 +51,12 @@ def test_login_by_enter(page):
     page.fill("#password", "secret_sauce")
     page.locator("#password").press("Enter")
 
-    time.sleep(1)
+
     assert "inventory.html" in page.url
     product_items = page.locator(".inventory_item")
     assert product_items.count() > 0
 
+@pytest.mark.regression
 def test_add_all_products_to_cart(page):
 
     page.goto("https://www.saucedemo.com")
@@ -68,13 +70,14 @@ def test_add_all_products_to_cart(page):
 
     for i in range(total_products):
         buttons.nth(i).click()
-        time.sleep(1)
+
 
     cart_badge = page.locator(".shopping_cart_badge")
 
     assert cart_badge.inner_text() == str(total_products)
 
 
+@pytest.mark.regression
 def test_open_all_products(page):
 
     page.goto("https://saucedemo.com")
@@ -82,7 +85,9 @@ def test_open_all_products(page):
     page.fill("#user-name", "standard_user")
     page.fill("#password", "secret_sauce")
     page.click("#login-button")
-    time.sleep(1)
+
+
+    
 
     for i in range(6):
         catalog_item = page.locator(".inventory_item").nth(i)
@@ -91,7 +96,7 @@ def test_open_all_products(page):
         catalog_price = catalog_item.locator(".inventory_item_price").inner_text()
 
         catalog_item.locator(".inventory_item_name").click()
-        time.sleep(1)
+
 
         page_name = page.locator(".inventory_details_name").inner_text()
         page_price = page.locator(".inventory_details_price").inner_text()
@@ -101,5 +106,4 @@ def test_open_all_products(page):
         assert "inventory-item.html" in page.url
 
         page.click("#back-to-products")
-        time.sleep(1)
 
